@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Al Hayat Luxury Hotel & Resort | Admin Edition</title>
+    <!-- Иконки FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- НАСТРОЙКИ И ДИЗАЙН-СИСТЕМА (LUXURY BENTO) --- */
+        :root {
+            --primary: #d4af37; /* Королевское золото */
+            --primary-rgb: 212, 175, 55;
+            --dark: #090d16;
+            --dark-light: #131a26;
+            --white: #ffffff;
+            --text: #e2e8f0;
+            --text-muted: #74859a;
+            --ease: cubic-bezier(0.16, 1, 0.3, 1);
+            --transition: all 0.5s var(--ease);
+            --radius-bento: 24px;
+            --admin-color: #10b981; 
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Montserrat', 'Segoe UI', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--dark);
+            color: var(--text);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Эффект прокрутки (Scroll Reveal) */
+        .reveal {
+            opacity: 0;
+            transform: translateY(50px) scale(0.98);
+            transition: opacity 0.8s var(--ease), transform 0.8s var(--ease);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 30px;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 70px;
+        }
+        .section-header h2 {
+            font-size: 46px;
+            font-weight: 900;
+            letter-spacing: -1px;
+            color: var(--white);
+        }
+        .section-header h2 span { color: var(--primary); }
+        .section-header p {
+            color: var(--text-muted);
+            font-size: 16px;
+            margin-top: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* --- ШАПКА И СТИЛЬНЫЙ ПРОФИЛЬ --- */
+        header {
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            z-index: 1000;
+            padding: 25px 0;
+            transition: var(--transition);
+        }
+        header.scrolled {
+            background: rgba(9, 13, 22, 0.85);
+            backdrop-filter: blur(20px);
+            padding: 15px 0;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .header-wrap {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: 3px;
+            color: var(--white);
+            text-transform: uppercase;
+        }
+        .logo span { color: var(--primary); }
+
+        /* ОБНОВЛЕННЫЕ СТИЛИ ДЛЯ ТЕКСТА МЕНЮ (Главная, Коллекция, Сервис) */
+        nav ul { display: flex; gap: 40px; list-style: none; }
+        nav a {
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #cbd5e1; /* Идеальный премиальный оттенок текстильного серебра */
+            text-decoration: none;
+            transition: var(--transition);
+            position: relative;
+            padding: 4px 0;
+        }
+        /* Плавное золотое подчеркивание и изменение цвета при наведении */
+        nav a:hover { 
+            color: var(--primary); 
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+        }
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--primary);
+            transition: var(--transition);
+        }
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        /* Профиль юзера в шапке */
+        .user-profile-menu {
+            position: relative;
+            display: none; 
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            background: rgba(255,255,255,0.03);
+            padding: 8px 20px;
+            border-radius: 50px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: var(--transition);
+        }
+        .user-profile-menu:hover { background: rgba(var(--primary-rgb), 0.1); border-color: var(--primary); }
+        .user-avatar {
+            width: 32px; height: 32px; background: var(--primary);
+            color: var(--dark); display: flex;
+            align-items: center; justify-content: center; font-weight: 800; border-radius: 50%;
+        }
+        .user-avatar.admin-mode { background: var(--admin-color); color: var(--white); }
+        
+        .dropdown-profile {
+            position: absolute; top: 120%; right: 0; width: 280px;
+            background: var(--dark-light); border-radius: 16px; padding: 20px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.08);
+            display: none; flex-direction: column; gap: 15px; z-index: 1100;
+        }
+        .dropdown-profile.active { display: flex; animation: fadeInUp 0.4s var(--ease); }
+        .dropdown-info h4 { color: var(--white); font-size: 16px; }
+        .dropdown-info p { color: var(--primary); font-size: 13px; font-weight: 600; }
+        .dropdown-info p.admin-role { color: var(--admin-color); }
+        
+        .dropdown-item {
+            display: flex; align-items: center; gap: 12px; font-size: 14px;
+            color: var(--text); padding: 10px 0; border-top: 1px solid rgba(255,255,255,0.05);
+            transition: var(--transition);
+        }
+        .dropdown-item:hover { color: var(--primary); padding-left: 5px; }
+        .dropdown-item.admin-action { color: var(--admin-color); font-weight: bold; }
+        .dropdown-item.admin-action:hover { color: var(--white); }
+
+        .burger { display: none; font-size: 24px; cursor: pointer; color: var(--white); }
+
+        /* --- ГЛАВНЫЙ ЭКРАН (HERO) --- */
+        .hero {
+            height: 100vh; display: flex; align-items: center; justify-content: center;
+            position: relative; overflow: hidden; text-align: center;
+        }
+        .hero-video {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover; z-index: -1; filter: brightness(0.4);
+        }
+        .hero-content h1 {
+            font-size: 80px; font-weight: 900; line-height: 1.1; letter-spacing: -2px;
+            color: var(--white); margin-bottom: 25px;
+        }
+        .hero-content h1 span { color: var(--primary); }
+        .hero-content p { font-size: 22px; max-width: 800px; margin: 0 auto 40px; color: #cbd5e1; }
+
+        .btn-lux {
+            background: var(--primary); color: var(--dark); padding: 20px 45px;
+            font-size: 15px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px;
+            border: none; border-radius: 50px; cursor: pointer; transition: var(--transition);
+            box-shadow: 0 10px 30px rgba(212,175,55,0.3);
+        }
+        .btn-lux:hover { background: var(--white); transform: translateY(-4px); box-shadow: 0 15px 40px rgba(255,255,255,0.2); }
+
+        /* --- BENTO СЕТКА --- */
+        .bento-section { padding: 120px 0; }
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-auto-rows: minmax(320px, auto);
+            gap: 30px;
+        }
+
+        .bento-item {
+            background: var(--dark-light);
+            border-radius: var(--radius-bento);
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.03);
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 40px;
+        }
+        .bento-item:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+            border-color: rgba(212,175,55,0.2);
+        }
+
+        .bento-2x2 { grid-column: span 2; grid-row: span 2; }
+        .bento-2x1 { grid-column: span 2; }
+        .bento-1x2 { grid-row: span 2; }
+
+        .bento-bg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover; z-index: 1; filter: brightness(0.55);
+            transition: transform 3s var(--ease);
+        }
+        .bento-item:hover .bento-bg { transform: scale(1.08) rotate(0.5deg); }
+
+        .bento-data { position: relative; z-index: 2; width: 100%; }
+        .bento-tag {
+            background: var(--primary); color: var(--dark); padding: 6px 14px;
+            font-size: 11px; font-weight: 800; border-radius: 50px; text-transform: uppercase;
+            width: fit-content; margin-bottom: 20px; letter-spacing: 1px;
+        }
+        .bento-title { font-size: 32px; font-weight: 800; color: var(--white); margin-bottom: 10px; }
+        .bento-price { font-size: 22px; color: var(--primary); font-weight: 700; margin-bottom: 20px; }
+        .bento-desc { color: var(--text-muted); font-size: 15px; margin-bottom: 25px; }
+
+        /* Микро-калькулятор стоимости */
+        .bento-calc {
+            background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px;
+            backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); margin-top: 20px;
+        }
+        .calc-inputs { display: flex; gap: 10px; margin-bottom: 15px; }
+        .calc-inputs input {
+            width: 50%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
+            padding: 10px; border-radius: 8px; color: var(--white); font-size: 13px; outline: none;
+        }
+        .calc-btn {
+            width: 100%; background: var(--white); color: var(--dark); padding: 12px;
+            border-radius: 8px; font-weight: 700; border: none; cursor: pointer; transition: var(--transition);
+        }
+        .calc-btn:hover { background: var(--primary); }
+
+        .bento-review { justify-content: space-between; background: linear-gradient(135deg, #131a26, #090d16); }
+        .stars { color: var(--primary); margin-bottom: 15px; }
+        .review-text { font-style: italic; font-size: 18px; color: #cbd5e1; }
+        .author { display: flex; align-items: center; gap: 15px; margin-top: 20px; }
+        .author img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; }
+
+        /* --- ВСПЛЫВАЮЩИЕ ОКНА --- */
+        .modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(9, 13, 22, 0.95); backdrop-filter: blur(25px);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 2000; opacity: 0; visibility: hidden; transition: var(--transition);
+        }
+        .modal.active { opacity: 1; visibility: visible; }
+        .modal-body {
+            background: var(--dark-light); padding: 50px; border-radius: var(--radius-bento);
+            width: 100%; max-width: 480px; position: relative;
+            box-shadow: 0 30px 70px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.05);
+            transform: scale(0.9) translateY(30px); transition: var(--transition);
+        }
+        .modal.active .modal-body { transform: scale(1) translateY(0); }
+        
+        .close-modal { position: absolute; top: 25px; right: 30px; font-size: 30px; cursor: pointer; color: var(--text-muted); transition: var(--transition); }
+        .close-modal:hover { color: var(--primary); transform: rotate(90deg); }
+
+        .modal-body h3 { font-size: 32px; font-weight: 800; color: var(--white); text-align: center; margin-bottom: 35px; }
+        .modal-body h3 span { color: var(--admin-color); }
+        
+        .field { position: relative; margin-bottom: 25px; }
+        .field i { position: absolute; left: 20px; top: 20px; color: var(--text-muted); }
+        .field input, .field textarea {
+            width: 100%; padding: 18px 20px 18px 55px; background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; color: var(--white);
+            font-size: 15px; outline: none; transition: var(--transition);
+        }
+        .field textarea { height: 100px; resize: none; padding-left: 55px; padding-top: 15px; }
+        .field input:focus, .field textarea:focus { border-color: var(--primary); background: rgba(255,255,255,0.05); box-shadow: 0 0 15px rgba(212,175,55,0.15); }
+
+        .btn-admin-submit {
+            background: var(--admin-color) !important;
+            color: var(--white) !important;
+        }
+
+        /* ПОДВАЛ */
+        footer { background: #05070c; padding: 60px 0; text-align: center; border-top: 1px solid rgba(255,255,255,0.02); }
+        footer p { color: var(--text-muted); font-size: 14px; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- АДАПТИВНОСТЬ --- */
+        @media(max-width: 1024px) {
+            .bento-grid { grid-template-columns: repeat(2, 1fr); }
+            .bento-2x2 { grid-column: span 2; grid-row: span 1; }
+            .hero-content h1 { font-size: 55px; }
+        }
+        @media(max-width: 768px) {
+            nav { display: none; }
+            .burger { display: block; }
+            .bento-grid { grid-template-columns: 1fr; }
+            .bento-2x2, .bento-2x1, .bento-1x2 { grid-column: span 1; grid-row: span 1; }
+            .hero-content h1 { font-size: 42px; }
+            .modal-body { padding: 30px; }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- НАВИГАЦИОННАЯ ПАНЕЛЬ -->
+    <header id="navbar">
+        <div class="container header-wrap">
+            <a href="#" class="logo">Al Hayat<span>.</span></a>
+            <nav>
+                <ul>
+                    <li><a href="#">Главная</a></li>
+                    <li><a href="#collection">Коллекция</a></li>
+                    <li><a href="#experience">Сервис</a></li>
+                </ul>
+            </nav>
+            
+            <!-- Зона Авторизации -->
+            <div class="auth-zone">
+                <button class="btn-lux" id="loginTriggerBtn" style="padding: 10px 25px; font-size: 13px;">Войти</button>
+                
+                <div class="user-profile-menu" id="userMenu">
+                    <div class="user-avatar" id="userInitial">U</div>
+                    <span id="usernameDisplay" style="font-weight: 600; font-size: 14px;">Гость</span>
+                    <i class="fas fa-chevron-down" style="font-size: 11px; color: var(--text-muted);"></i>
+                    
+                    <!-- Выпадающее меню кабинета -->
+                    <div class="dropdown-profile" id="profileDropdown">
+                        <div class="dropdown-info">
+                            <h4 id="fullNameDisplay">Имя Пользователя</h4>
+                            <p id="userRoleStatus"><i class="fas fa-crown"></i> Статус: VIP Guest</p>
+                        </div>
+                        <!-- Кнопка админа -->
+                        <div class="dropdown-item admin-action" id="adminPanelBtn" style="display: none;"><i class="fas fa-tools"></i> Добавить комнату</div>
+                        
+                        <div class="dropdown-item" id="walletRow"><i class="fas fa-wallet"></i> Бонусный баланс: $150</div>
+                        <div class="dropdown-item"><i class="fas fa-concierge-bell"></i> Активные брони: <span style="margin-left:5px; color:var(--primary)" id="bookingCount">0</span></div>
+                        <div class="dropdown-item" id="logoutBtn" style="color: #ef4444;"><i class="fas fa-sign-out-alt"></i> Выйти из системы</div>
+                    </div>
+                </div>
+            </div>
+            <i class="fas fa-bars burger" id="mobileMenuBtn"></i>
+        </div>
+    </header>
+
+    <!-- ГЛАВНЫЙ ЭКРАН -->
+    <section class="hero">
+        <img class="hero-video" src="img/IMG_0324.jpg" alt="Luxury Hotel">
+        <div class="hero-content">
+            <p>Премиальный курорт & SPA</p>
+            <h1>Определяя новый уровень<br><span>Роскоши</span></h1>
+            <a href="#collection"><button class="btn-lux">Посмотреть номера</button></a>
+        </div>
+    </section>
+
+    <!-- ИНТЕРАКТИВНАЯ СЕКЦИЯ BENTO GRID -->
+    <section class="bento-section" id="collection">
+        <div class="container">
+            <div class="section-header reveal">
+                <p>Эксклюзивный выбор</p>
+                <h2>Апартаменты и <span>Развлечения</span></h2>
+                <p style="font-size: 12px; color: var(--admin-color); margin-top: 10px; display: none;" id="adminNotice"><i class="fas fa-info-circle"></i> Вы в режиме администратора. Вы можете добавлять новые карточки номеров.</p>
+            </div>
+
+            <!-- Bento сетка -->
+            <div class="bento-grid" id="mainBentoGrid">
+                
+                <!-- Bento 1: Королевский Сьют -->
+                <div class="bento-item bento-2x2 reveal">
+                    <img src="img/IMG_0335-HDR.jpg" class="bento-bg" alt="Suite">
+                    <div class="bento-data">
+                        <div class="bento-tag">Выбор ценителей</div>
+                        <h3 class="bento-title">Королевский Сьют</h3>
+                        <p class="bento-desc">Пентхаус площадью 140 кв.м с персональным панорамным бассейном, круглосуточным батлер-сервисом и винным шкафом.</p>
+                        <div class="bento-price">$550 / Ночь</div>
+                        
+                        <div class="bento-calc">
+                            <div class="calc-inputs">
+                                <input type="date" class="calc-in">
+                                <input type="date" class="calc-out">
+                            </div>
+                            <button class="calc-btn" onclick="calculateBentoPrice(this, 550)">Рассчитать проживание</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bento 2: SPA-Центр -->
+                <div class="bento-item reveal">
+                    <img src="img/IMG_0374-HDR.jpg" class="bento-bg" alt="SPA">
+                    <div class="bento-data">
+                        <div class="bento-tag">Релаксация</div>
+                        <h3 class="bento-title" style="font-size: 24px;">Al Hayat Wellness & SPA</h3>
+                        <p class="bento-desc" style="font-size: 13px;">Массаж горячими камнями, хаммам и аюрведа.</p>
+                    </div>
+                </div>
+
+                <!-- Bento 3: Отзыв -->
+                <div class="bento-item bento-review reveal">
+                    <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                    <p class="review-text">«Это лучший сервис, который я встречала. Отель Al Hayat превзошел все ожидания, дизайн номеров поражает воображение!»</p>
+                    <div class="author">
+                        <img src="img/IMG_0374-HDR.jpg" alt="User">
+                        <div>
+                            <h5 style="color: var(--white)">Елена Ковальчук</h5>
+                            <p style="font-size:12px; color: var(--text-muted)">Август 2025</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bento 4: Ресторан -->
+                <div class="bento-item bento-2x1 reveal" id="experience">
+                    <img src="img/IMG_0450-HDR.jpg" class="bento-bg" alt="Gourmet">
+                    <div class="bento-data">
+                        <div class="bento-tag">Гастрономия</div>
+                        <h3 class="bento-title">Ресторан «Золотой Шафран»</h3>
+                        <p class="bento-desc">Шедевры высокой кухни от шеф-поваров, награжденных звездами Мишлен. Уникальные авторские блюда Востока.</p>
+                    </div>
+                </div>
+
+                <!-- Bento 5: Номер Бизнес Делюкс -->
+                <div class="bento-item reveal">
+                    <img src="img/IMG_0495-HDR.jpg" class="bento-bg" alt="Deluxe">
+                    <div class="bento-data">
+                        <div class="bento-tag">Бизнес & Комфорт</div>
+                        <h3 class="bento-title" style="font-size: 24px;">Бизнес Люкс</h3>
+                        <div class="bento-price" style="font-size: 18px;">$240 / Ночь</div>
+                        
+                        <div class="bento-calc">
+                            <div class="calc-inputs">
+                                <input type="date" class="calc-in">
+                                <input type="date" class="calc-out">
+                            </div>
+                            <button class="calc-btn" onclick="calculateBentoPrice(this, 240)">Рассчитать</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- МОДАЛЬНОЕ ОКНО: АВТОРИЗАЦИЯ -->
+    <div class="modal" id="authModal">
+        <div class="modal-body" id="loginBox">
+            <span class="close-modal">&times;</span>
+            <h3>Добро пожаловать</h3>
+            <p style="font-size: 12px; text-align: center; margin-bottom: 20px; color: var(--text-muted)">Вход для админа: admin@alhayat.com / admin123</p>
+            <form id="loginFormAction">
+                <div class="field">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="loginEmail" required placeholder="Ваш Email">
+                </div>
+                <div class="field">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="loginPass" required placeholder="Пароль">
+                </div>
+                <button type="submit" class="btn-lux" style="width: 100%; border-radius:12px;">Войти в аккаунт</button>
+                <div class="modal-footer">
+                    Нет учетной записи? <span id="jumpToRegister" style="color:var(--primary); font-weight:700; cursor:pointer;">Создать её</span>
+                </div>
+            </form>
+        </div>
+
+        <div class="modal-body" id="registerBox" style="display: none;">
+            <span class="close-modal">&times;</span>
+            <h3>Регистрация VIP</h3>
+            <form id="registerFormAction">
+                <div class="field">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="regName" required placeholder="Ваше Имя и Фамилия">
+                </div>
+                <div class="field">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="regEmail" required placeholder="Email адрес">
+                </div>
+                <div class="field">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="regPass" required placeholder="Надежный пароль">
+                </div>
+                <button type="submit" class="btn-lux" style="width: 100%; border-radius:12px;">Зарегистрироваться</button>
+                <div class="modal-footer">
+                    Уже зарегистрированы? <span id="jumpToLogin" style="color:var(--primary); font-weight:700; cursor:pointer;">Войти</span>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- МОДАЛЬНОЕ ОКНО АДМИНИСТРАТОРА -->
+    <div class="modal" id="adminModal">
+        <div class="modal-body">
+            <span class="close-modal" id="closeAdminModal">&times;</span>
+            <h3>Добавить <span>Номер</span></h3>
+            <form id="addRoomForm">
+                <div class="field">
+                    <i class="fas fa-hotel"></i>
+                    <input type="text" id="roomTitle" required placeholder="Название номера (например: Императорский Люкс)">
+                </div>
+                <div class="field">
+                    <i class="fas fa-dollar-sign"></i>
+                    <input type="number" id="roomPrice" required placeholder="Цена за ночь в $">
+                </div>
+                <div class="field">
+                    <i class="fas fa-image"></i>
+                    <input type="url" id="roomImg" required placeholder="Ссылка на фото номера (URL)">
+                </div>
+                <div class="field">
+                    <i class="fas fa-align-left"></i>
+                    <textarea id="roomDesc" required placeholder="Описание номера и его эксклюзивных удобств..."></textarea>
+                </div>
+                <button type="submit" class="btn-lux btn-admin-submit" style="width: 100%; border-radius:12px;">Опубликовать на сайт</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ПОДВАЛ -->
+    <footer>
+        <div class="container">
+            <div class="logo" style="margin-bottom: 20px;">Al Hayat<span>.</span></div>
+            <p>&copy; 2026 Премиальная экосистема отелей Al Hayat Group. Все права защищены.</p>
+        </div>
+    </footer>
+
+    <!-- СКРИПТЫ JAVASCRIPT -->
+    <script>
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            navbar.classList.toggle('scrolled', window.scrollY > 60);
+        });
+
+        const authModal = document.getElementById('authModal');
+        const loginTriggerBtn = document.getElementById('loginTriggerBtn');
+        const loginBox = document.getElementById('loginBox');
+        const registerBox = document.getElementById('registerBox');
+
+        loginTriggerBtn.addEventListener('click', () => {
+            authModal.classList.add('active');
+            loginBox.style.display = 'block';
+            registerBox.style.display = 'none';
+        });
+
+        document.querySelectorAll('.close-modal').forEach(cross => {
+            cross.addEventListener('click', () => {
+                authModal.classList.remove('active');
+                document.getElementById('adminModal').classList.remove('active');
+            });
+        });
+
+        document.getElementById('jumpToRegister').addEventListener('click', () => {
+            loginBox.style.display = 'none';
+            registerBox.style.display = 'block';
+        });
+        document.getElementById('jumpToLogin').addEventListener('click', () => {
+            registerBox.style.display = 'none';
+            loginBox.style.display = 'block';
+        });
+
+        const userMenu = document.getElementById('userMenu');
+        const profileDropdown = document.getElementById('profileDropdown');
+        const usernameDisplay = document.getElementById('usernameDisplay');
+        const fullNameDisplay = document.getElementById('fullNameDisplay');
+        const userInitial = document.getElementById('userInitial');
+        const userRoleStatus = document.getElementById('userRoleStatus');
+        const adminPanelBtn = document.getElementById('adminPanelBtn');
+        const walletRow = document.getElementById('walletRow');
+        const adminNotice = document.getElementById('adminNotice');
+
+        document.getElementById('registerFormAction').addEventListener('submit', (e) => {
+            e.preventDefault();
+            logInUser(document.getElementById('regName').value, false);
+        });
+
+        document.getElementById('loginFormAction').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const pass = document.getElementById('loginPass').value;
+
+            if (email === 'admin@alhayat.com' && pass === 'admin123') {
+                logInUser('Administrator', true);
+            } else {
+                logInUser(email.split('@')[0], false);
+            }
+        });
+
+        function logInUser(name, isAdmin) {
+            loginTriggerBtn.style.display = 'none';
+            userMenu.style.display = 'flex';
+            usernameDisplay.textContent = name;
+            fullNameDisplay.textContent = name;
+            userInitial.textContent = name.charAt(0).toUpperCase();
+            authModal.classList.remove('active');
+
+            if (isAdmin) {
+                userRoleStatus.innerHTML = `<i class="fas fa-user-shield"></i> Роль: Главный Админ`;
+                userRoleStatus.classList.add('admin-role');
+                userInitial.classList.add('admin-mode');
+                adminPanelBtn.style.display = 'flex'; 
+                walletRow.style.display = 'none';    
+                adminNotice.style.display = 'block'; 
+            } else {
+                userRoleStatus.innerHTML = `<i class="fas fa-crown"></i> Статус: VIP Guest`;
+                userRoleStatus.classList.remove('admin-role');
+                userInitial.classList.remove('admin-mode');
+                adminPanelBtn.style.display = 'none';
+                walletRow.style.display = 'flex';
+                adminNotice.style.display = 'none';
+            }
+        }
+
+        userMenu.addEventListener('click', (e) => {
+            e.stopPropagation();
+            profileDropdown.classList.toggle('active');
+        });
+        window.addEventListener('click', () => profileDropdown.classList.remove('active'));
+
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            userMenu.style.display = 'none';
+            loginTriggerBtn.style.display = 'block';
+            adminNotice.style.display = 'none';
+            profileDropdown.classList.remove('active');
+        });
+
+        const adminModal = document.getElementById('adminModal');
+        adminPanelBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            adminModal.classList.add('active');
+            profileDropdown.classList.remove('active');
+        });
+
+        const mainBentoGrid = document.getElementById('mainBentoGrid');
+        document.getElementById('addRoomForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const title = document.getElementById('roomTitle').value;
+            const price = document.getElementById('roomPrice').value;
+            const img = document.getElementById('roomImg').value;
+            const desc = document.getElementById('roomDesc').value;
+
+            const newBentoItem = document.createElement('div');
+            newBentoItem.className = 'bento-item reveal active'; 
+
+            newBentoItem.innerHTML = `
+                <img src="${img}" class="bento-bg" alt="${title}">
+                <div class="bento-data">
+                    <div class="bento-tag" style="background-color: var(--admin-color); color: white;">Новинка от Админа</div>
+                    <h3 class="bento-title">${title}</h3>
+                    <p class="bento-desc">${desc}</p>
+                    <div class="bento-price">$${price} / Ночь</div>
+                    <div class="bento-calc">
+                        <div class="calc-inputs">
+                            <input type="date" class="calc-in">
+                            <input type="date" class="calc-out">
+                        </div>
+                        <button class="calc-btn" onclick="calculateBentoPrice(this, ${price})">Рассчитать проживание</button>
+                    </div>
+                </div>
+            `;
+
+            mainBentoGrid.insertBefore(newBentoItem, mainBentoGrid.firstChild);
+            document.getElementById('addRoomForm').reset();
+            adminModal.classList.remove('active');
+            newBentoItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+
+        function calculateBentoPrice(button, pricePerNight) {
+            const container = button.closest('.bento-calc');
+            const dateInVal = container.querySelectorAll('.calc-in')[0].value;
+            const dateOutVal = container.querySelectorAll('.calc-out')[0].value;
+
+            if (!dateInVal || !dateOutVal) {
+                alert('Пожалуйста, выберите обе даты.');
+                return;
+            }
+
+            const d1 = new Date(dateInVal);
+            const d2 = new Date(dateOutVal);
+            const nights = Math.ceil((d2.getTime() - d1.getTime()) / (1000 * 3600 * 24));
+
+            if (nights <= 0) {
+                alert('Дата выезда должна быть позже даты заезда.');
+                return;
+            }
+
+            button.innerHTML = `Итого: $${nights * pricePerNight} (${nights} ноч.)`;
+            
+            if(userMenu.style.display === 'flex') {
+               const countBox = document.getElementById('bookingCount');
+               countBox.textContent = parseInt(countBox.textContent) + 1;
+            }
+        }
+
+        const reveals = document.querySelectorAll('.reveal');
+        const handleReveal = () => {
+            reveals.forEach(element => {
+                if (element.getBoundingClientRect().top < window.innerHeight * 0.88) {
+                    element.classList.add('active');
+                }
+            });
+        };
+        window.addEventListener('scroll', handleReveal);
+        window.addEventListener('load', handleReveal);
+    </script>
+</body>
+</html>
