@@ -1,0 +1,2 @@
+# AlHayat.
+hotel
